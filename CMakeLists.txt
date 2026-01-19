@@ -16,6 +16,16 @@ target_include_directories(globals PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# ===== add CLI11 =====
+include(FetchContent)
+FetchContent_Declare(
+  CLI11
+  GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+  GIT_TAG v2.6.1
+)
+FetchContent_MakeAvailable(CLI11)
+
+
 # ===== Main =====
 add_executable(atk atk.cpp)
 target_link_libraries(atk PRIVATE globals)
@@ -26,25 +36,27 @@ file(GLOB_RECURSE ATK_COMMANDS CONFIGURE_DEPENDS
 )
 
 foreach(cmd ${ATK_COMMANDS})
-    # Path relativo a atk-cmd (es: net/scan.cpp)
+
     file(RELATIVE_PATH rel_path
         ${CMAKE_CURRENT_SOURCE_DIR}/atk-cmd
         ${cmd}
     )
 
-    # Sottodirectory (es: net)
+    # Subdirectory
     get_filename_component(subdir ${rel_path} DIRECTORY)
 
-    # Nome eseguibile (scan)
+    # Executable name
     get_filename_component(exec_name ${cmd} NAME_WE)
 
-    # Directory di output
+    # Output directory
     set(output_dir
         ${CMAKE_BINARY_DIR}/atk-cmd-bin/${subdir}
     )
 
     add_executable(${exec_name} ${cmd})
     target_link_libraries(${exec_name} PRIVATE globals)
+    target_link_libraries(${exec_name} PRIVATE CLI11::CLI11)
+
 
     set_target_properties(${exec_name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${output_dir}
