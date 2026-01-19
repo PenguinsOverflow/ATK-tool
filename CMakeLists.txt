@@ -9,30 +9,45 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ===== Warning =====
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-# ===== Codice condiviso =====
+# ===== Shared code =====
 add_library(globals OBJECT globals.cpp)
 
 target_include_directories(globals PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# ===== Eseguibile principale =====
+# ===== Main =====
 add_executable(atk atk.cpp)
 target_link_libraries(atk PRIVATE globals)
 
-# ===== Comandi atk-* =====
-file(GLOB ATK_COMMANDS CONFIGURE_DEPENDS
+# ===== atk-* =====
+file(GLOB_RECURSE ATK_COMMANDS CONFIGURE_DEPENDS
     atk-cmd/*.cpp
 )
 
 foreach(cmd ${ATK_COMMANDS})
-    get_filename_component(cmd_name ${cmd} NAME_WE)
+    # Path relativo a atk-cmd (es: net/scan.cpp)
+    file(RELATIVE_PATH rel_path
+        ${CMAKE_CURRENT_SOURCE_DIR}/atk-cmd
+        ${cmd}
+    )
 
-    add_executable(${cmd_name} ${cmd})
-    target_link_libraries(${cmd_name} PRIVATE globals)
+    # Sottodirectory (es: net)
+    get_filename_component(subdir ${rel_path} DIRECTORY)
 
-    set_target_properties(${cmd_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY
-        ${CMAKE_BINARY_DIR}/atk-cmd-bin
+    # Nome eseguibile (scan)
+    get_filename_component(exec_name ${cmd} NAME_WE)
+
+    # Directory di output
+    set(output_dir
+        ${CMAKE_BINARY_DIR}/atk-cmd-bin/${subdir}
+    )
+
+    add_executable(${exec_name} ${cmd})
+    target_link_libraries(${exec_name} PRIVATE globals)
+
+    set_target_properties(${exec_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${output_dir}
+        OUTPUT_NAME ${exec_name}
     )
 endforeach()

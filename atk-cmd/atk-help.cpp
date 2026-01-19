@@ -16,7 +16,7 @@ string getHelp() {
     help += "  -v, --version    Show version information\n";
     
     help += "Available Commands:\n";
-    vector<string> commands = getAvailableCommands();
+    vector<string> commands = getAvailableCommands(COMMANDS_DIR);
     for (string cmd : commands) {
         help += "  " + cmd + "\n";
     }
