@@ -4,6 +4,9 @@
 
 using namespace std;
 
+// **********************
+void startArpSpoofing(const string target_ip, const string gateway_ip, bool verbose);
+// **********************
 
 int main(int argc, char* argv[]) {
     CLI::App app{"ARP spoofing command", "atk arp spoofing"};
@@ -42,8 +45,14 @@ int main(int argc, char* argv[]) {
         printf("%s\n", "Verbose mode enabled.");
     }
 
+    printf("%s\n", getMacFromIP("192.168.1.254").c_str());
+
     // startArpSpoofing(target_ip, gateway_ip, verbose);
 
     return 0;
 }
+
+// void startArpSpoofing(const string target_ip, const string gateway_ip, bool verbose) {
+
+// }
 
