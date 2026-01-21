@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "../inc/globals.h"
 #include <filesystem>
 #include <string>
 #include <vector>

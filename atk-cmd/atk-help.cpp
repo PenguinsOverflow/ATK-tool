@@ -1,5 +1,5 @@
 #include "atk-help.h"
-#include "../globals.h"
+#include "../utils/inc/globals.h"
 
 int main() {
     printf("%s", getHelp().c_str());

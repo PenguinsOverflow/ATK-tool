@@ -9,28 +9,37 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ===== Warning =====
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-# ===== Shared code =====
-add_library(globals OBJECT globals.cpp)
-
-target_include_directories(globals PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 # ===== add CLI11 =====
 include(FetchContent)
 FetchContent_Declare(
-  CLI11
-  GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
-  GIT_TAG v2.6.1
+    CLI11
+    GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+    GIT_TAG v2.6.1
 )
 FetchContent_MakeAvailable(CLI11)
+
+# ===== utils files =====
+file(GLOB_RECURSE UTILS_SRC
+    utils/src/*.cpp
+)
+
+add_library(utils OBJECT
+    ${UTILS_SRC}
+)
+
+target_include_directories(utils PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/inc
+)
 
 
 # ===== Main =====
 add_executable(atk atk.cpp)
-target_link_libraries(atk PRIVATE globals)
+target_link_libraries(atk PRIVATE
+    utils
+    CLI11::CLI11
+)
 
-# ===== atk-* =====
+# ===== atk cmd files =====
 file(GLOB_RECURSE ATK_COMMANDS CONFIGURE_DEPENDS
     atk-cmd/*.cpp
 )
@@ -54,9 +63,11 @@ foreach(cmd ${ATK_COMMANDS})
     )
 
     add_executable(${exec_name} ${cmd})
-    target_link_libraries(${exec_name} PRIVATE globals)
-    target_link_libraries(${exec_name} PRIVATE CLI11::CLI11)
 
+    target_link_libraries(${exec_name} PRIVATE
+        utils
+        CLI11::CLI11
+    )
 
     set_target_properties(${exec_name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${output_dir}
