@@ -1,4 +1,5 @@
 #include "utils/inc/globals.h"
+#include "utils/inc/stringutils.h"
 #include <unistd.h>
 #include <string>
 #include <vector>

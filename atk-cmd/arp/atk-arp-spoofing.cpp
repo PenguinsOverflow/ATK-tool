@@ -1,10 +1,9 @@
+#include "../../utils/inc/ip.h"
 #include <CLI/CLI.hpp>
 #include <cstdio>
-#include <regex>
 
 using namespace std;
 
-bool checkValidIpv4(const string ip);
 
 int main(int argc, char* argv[]) {
     CLI::App app{"ARP spoofing command", "atk arp spoofing"};
@@ -48,9 +47,3 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-bool checkValidIpv4(const string ip) {
-    static const regex ipv4(
-        R"(^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$)"
-    );
-    return regex_match(ip, ipv4);
-}

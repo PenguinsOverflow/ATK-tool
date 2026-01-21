@@ -1,4 +1,5 @@
 #include "../inc/globals.h"
+#include "../inc/stringutils.h"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -33,17 +34,6 @@ vector<string> getAvailableCommands(const string path) {
     moveItem(commands, "help", 0);
     moveItem(commands, "version", 1);
     return commands;
-}
-
-
-void replace_all(string& s, const string& from, const string& to) {
-    if (from.empty()) return;
-
-    size_t pos = 0;
-    while ((pos = s.find(from, pos)) != string::npos) {
-        s.replace(pos, from.length(), to);
-        pos += to.length();
-    }
 }
 
 void moveItem(vector<string>& vec, string item, size_t new_pos) {
