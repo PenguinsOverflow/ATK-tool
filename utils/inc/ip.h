@@ -6,3 +6,4 @@ using namespace std;
 
 bool checkValidIpv4(const string& ip);
 string getMacFromIP(const string& ip);
+string getMacFromInterface(const string& interface);

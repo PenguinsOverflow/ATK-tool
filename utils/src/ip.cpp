@@ -2,6 +2,20 @@
 #include "../inc/stringutils.h"
 #include <regex>
 #include <array>
+#include <cstring>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <net/bpf.h>
+#include <net/if_dl.h>
+#include <ifaddrs.h>
+#include <fcntl.h>
+#include <net/ethernet.h>
+#include <sstream>
+#include <iomanip>
+
 
 bool checkValidIpv4(const string& ip) {
     static const regex ipv4(
@@ -30,4 +44,37 @@ string getMacFromIP(const string& ip) {
     }
 
     return mac;
+}
+
+string getMacFromInterface(const string& interface) {
+    struct ifaddrs *ifap, *ifa;
+    string macAddress = "00:00:00:00:00:00";
+    
+    if (getifaddrs(&ifap) != 0) {
+        return "00:00:00:00:00:00";
+    }
+    
+    for (ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
+
+        // check is it a link layer address
+        if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_LINK) {
+            if (strcmp(ifa->ifa_name, interface.c_str()) == 0) {
+                struct sockaddr_dl* sdl = (struct sockaddr_dl*)ifa->ifa_addr;
+                unsigned char* mac = (unsigned char*)LLADDR(sdl);
+                
+                stringstream ss;
+                ss << hex << setfill('0'); // Format as hexadecimal with leading zeros
+                for (int i = 0; i < 6; i++) {
+                    ss << setw(2) << (int)mac[i]; // Convert byte to hex with width 2
+                    if (i < 5) ss << ":";
+                }
+                
+                macAddress = ss.str();
+                break;
+            }
+        }
+    }
+    
+    freeifaddrs(ifap); // Free memory allocated by getifaddrs
+    return macAddress;
 }
