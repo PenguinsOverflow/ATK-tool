@@ -160,3 +160,24 @@ string getMacFromInterface(const string& interface) {
     freeifaddrs(ifap); // Free memory allocated by getifaddrs
     return macAddress;
 }
+
+bool interfaceExists(const string& interface) {
+    struct ifaddrs *ifap, *ifa;
+    bool found = false;
+    
+    // Get the list of network interfaces
+    if (getifaddrs(&ifap) != 0) {
+        return false; 
+    }
+    
+    // Search interface
+    for (ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (strcmp(ifa->ifa_name, interface.c_str()) == 0) {
+            found = true;
+            break;
+        }
+    }
+    
+    freeifaddrs(ifap);
+    return found;
+}

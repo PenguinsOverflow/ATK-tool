@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <thread>
 #include <chrono>
+#include <regex>
 
 using namespace std;
 
@@ -38,7 +39,7 @@ int main(int argc, char* argv[]) {
         return app.exit(e);
     }
 
-    // Input validation
+    // ******** Input validation ********
     if (!checkValidIpv4(target_ip)) {
         printf("Invalid target IP address: %s\n", target_ip.c_str());
         return 1;
@@ -47,6 +48,27 @@ int main(int argc, char* argv[]) {
         printf("Invalid sender IP address: %s\n", sender_ip.c_str());
         return 1;
     }
+    if (times <= 0) {
+        printf("Times must be greater than 0\n");
+        return 1;
+    }
+    if (delay < 0) {
+        printf("Delay must be greater than or equal to 0\n");
+        return 1;
+    }
+    if (spoofedMac != "" ) {
+        // check mac address format
+        regex mac_regex("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$");
+        if (!regex_match(spoofedMac, mac_regex)) {
+            printf("Invalid MAC address format: %s\n", spoofedMac.c_str());
+            return 1;
+        }
+    }
+    if (!interfaceExists(interface)) {
+        printf("Interface does not exist: %s\n", interface.c_str());
+        return 1;
+    }
+    // **********************************
 
 
     if (spoofedMac.empty()) {
@@ -74,9 +96,9 @@ void startArpSpoofing(const string target_ip, const string sender_ip, string spo
     string target_mac = getMacFromIP(target_ip);
 
     if (sendARPResponse(target_ip, target_mac, sender_ip, spoofedMac, interface)) {
-        cout << "ARP Response inviato con successo" << endl;
+        cout << "ARP Response sent" << endl;
     } else {
-        cout << "Errore nell'invio dell'ARP Response" << endl;
+        cout << "Error" << endl;
     }
 }
 
