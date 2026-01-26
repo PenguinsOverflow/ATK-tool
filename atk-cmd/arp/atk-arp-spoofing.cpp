@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <thread>
 #include <chrono>
-#include <regex>
 
 using namespace std;
 
@@ -58,8 +57,7 @@ int main(int argc, char* argv[]) {
     }
     if (spoofedMac != "" ) {
         // check mac address format
-        regex mac_regex("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$");
-        if (!regex_match(spoofedMac, mac_regex)) {
+        if (!checkValidMac(spoofedMac)) {
             printf("Invalid MAC address format: %s\n", spoofedMac.c_str());
             return 1;
         }
@@ -80,6 +78,8 @@ int main(int argc, char* argv[]) {
         printf("Sender IP: %s\n", sender_ip.c_str());
         printf("Interface: %s\n", interface.c_str());
         printf("Spoofed mac: %s\n", spoofedMac.c_str());
+        printf("Target mac: %s\n", getMacFromIP(target_ip).c_str());
+        cout << "\n";
     }
 
     for (int i = 0; i < times; i++) {

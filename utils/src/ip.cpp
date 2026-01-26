@@ -24,6 +24,19 @@ bool checkValidIpv4(const string& ip) {
     return regex_match(ip, ipv4);
 }
 
+bool checkValidMac(const string& mac) {
+    static const regex mac_regex("^([0-9A-Fa-f]{1,2}[:-]){5}([0-9A-Fa-f]{1,2})$");
+    return regex_match(mac, mac_regex);
+}
+
+unsigned char* macStringToBytes(const string& macStr) {
+    unsigned char* mac = new unsigned char[6];
+    sscanf(macStr.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+           &mac[0], &mac[1], &mac[2],
+           &mac[3], &mac[4], &mac[5]);
+    return mac;
+}
+
 string getMacFromIP(const string& ip) {
     string mac = "00:00:00:00:00:00";
     string command = "arp " + ip + " | grep -Eo '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}'";
@@ -46,21 +59,7 @@ string getMacFromIP(const string& ip) {
     return mac;
 }
 
-bool sendARPResponse(const string& targetIP, const string& targetMac, const string& senderIP, const string& senderMac, const string& interface) {
-    
-    // Convert MAC addresses from string to byte array
-    unsigned char srcMac[6], dstMac[6];
-    if (sscanf(senderMac.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-               &srcMac[0], &srcMac[1], &srcMac[2], 
-               &srcMac[3], &srcMac[4], &srcMac[5]) != 6) {
-        return false;
-    }
-    if (sscanf(targetMac.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-               &dstMac[0], &dstMac[1], &dstMac[2], 
-               &dstMac[3], &dstMac[4], &dstMac[5]) != 6) {
-        return false;
-    }
-    
+bool sendPacket(const string& interface, const unsigned char* packet, size_t length) {
     // open BPF device
     int bpf = -1;
     char bpf_dev[32];
@@ -86,6 +85,21 @@ bool sendARPResponse(const string& targetIP, const string& targetMac, const stri
     // Enable immediate mode (no buffering)
     unsigned int enable = 1;
     ioctl(bpf, BIOCIMMEDIATE, &enable);
+    
+    ssize_t sent = write(bpf, packet, length);
+    
+    close(bpf);
+    
+    return sent == 42;
+}
+
+bool sendARPResponse(const string& targetIP, const string& targetMac, const string& senderIP, const string& senderMac, const string& interface) {
+    
+    if (!checkValidMac(senderMac) || !checkValidMac(targetMac)) {
+        return false;
+    }
+    unsigned char* srcMac = macStringToBytes(senderMac);
+    unsigned char* dstMac = macStringToBytes(targetMac);
     
     // Craft ARP reply packet
     unsigned char buffer[42];
@@ -121,11 +135,7 @@ bool sendARPResponse(const string& targetIP, const string& targetMac, const stri
     memcpy(buffer + 38, &targetAddr, 4);
     
     // Send the packet
-    ssize_t sent = write(bpf, buffer, 42);
-    
-    close(bpf);
-    
-    return sent == 42;
+    return sendPacket(interface, buffer, sizeof(buffer));
 }
 
 string getMacFromInterface(const string& interface) {
