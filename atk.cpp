@@ -1,10 +1,15 @@
-#include "atk.h"
-#include "globals.h"
-#include <format>
-#include <vector>
+#include "utils/inc/globals.h"
+#include "utils/inc/stringutils.h"
 #include <unistd.h>
+#include <string>
+#include <vector>
+#include <format>
 
 using namespace std;
+
+// **********************
+string calcDirectory(const string cmd);
+// **********************
 
 int main(int argc, char* argv[]) {
 
@@ -16,19 +21,22 @@ int main(int argc, char* argv[]) {
         }
 
         if (arg == "-h" || arg == "--help") {
-            system(format("./{}atk-help {}", COMMANDS_DIR, str_args).c_str());
+            system(format("./{}atk-help", COMMANDS_DIR).c_str());
             return 0;
         } else if (arg == "-v" || arg == "--version") {
-            system(format("./{}atk-version {}", COMMANDS_DIR, str_args).c_str());
+            system(format("./{}atk-version", COMMANDS_DIR).c_str());
             return 0;
         } else {
-
-            vector<string> commands = getAvailableCommands();
+            str_args = arg + " " + str_args;
+            vector<string> commands = getAvailableCommands(COMMANDS_DIR);
             bool found = false;
             for (string cmd : commands) {
-                if (arg.compare(cmd) == 0) {
+                if ((str_args).starts_with(cmd)) {
                     found = true;
-                    system(format("./{}atk-{} {}", COMMANDS_DIR, cmd, str_args).c_str());
+                    string str_directory = calcDirectory(cmd);
+                    str_args = str_args.substr(cmd.size());
+                    replace_all(cmd, " ", "-");
+                    system(format("./{}{}atk-{} {}", COMMANDS_DIR, str_directory, cmd, str_args).c_str());
                 }
             }
 
@@ -44,4 +52,14 @@ int main(int argc, char* argv[]) {
     }
     
     return 0;
+}
+
+
+string calcDirectory(const string cmd) {
+    string directory = "";
+    size_t pos = cmd.rfind(' ');
+    directory = cmd.substr(0, pos == string::npos ? 0 : pos);
+    replace_all(directory, " ", "/");
+    directory += "/";
+    return directory;
 }

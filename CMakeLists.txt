@@ -9,30 +9,68 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ===== Warning =====
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-# ===== Codice condiviso =====
-add_library(globals OBJECT globals.cpp)
+# ===== add CLI11 =====
+include(FetchContent)
+FetchContent_Declare(
+    CLI11
+    GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+    GIT_TAG v2.6.1
+)
+FetchContent_MakeAvailable(CLI11)
 
-target_include_directories(globals PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+# ===== utils files =====
+file(GLOB_RECURSE UTILS_SRC
+    utils/src/*.cpp
 )
 
-# ===== Eseguibile principale =====
-add_executable(atk atk.cpp)
-target_link_libraries(atk PRIVATE globals)
+add_library(utils OBJECT
+    ${UTILS_SRC}
+)
 
-# ===== Comandi atk-* =====
-file(GLOB ATK_COMMANDS CONFIGURE_DEPENDS
+target_include_directories(utils PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/inc
+)
+
+
+# ===== Main =====
+add_executable(atk atk.cpp)
+target_link_libraries(atk PRIVATE
+    utils
+    CLI11::CLI11
+)
+
+# ===== atk cmd files =====
+file(GLOB_RECURSE ATK_COMMANDS CONFIGURE_DEPENDS
     atk-cmd/*.cpp
 )
 
 foreach(cmd ${ATK_COMMANDS})
-    get_filename_component(cmd_name ${cmd} NAME_WE)
 
-    add_executable(${cmd_name} ${cmd})
-    target_link_libraries(${cmd_name} PRIVATE globals)
+    file(RELATIVE_PATH rel_path
+        ${CMAKE_CURRENT_SOURCE_DIR}/atk-cmd
+        ${cmd}
+    )
 
-    set_target_properties(${cmd_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY
-        ${CMAKE_BINARY_DIR}/atk-cmd-bin
+    # Subdirectory
+    get_filename_component(subdir ${rel_path} DIRECTORY)
+
+    # Executable name
+    get_filename_component(exec_name ${cmd} NAME_WE)
+
+    # Output directory
+    set(output_dir
+        ${CMAKE_BINARY_DIR}/atk-cmd-bin/${subdir}
+    )
+
+    add_executable(${exec_name} ${cmd})
+
+    target_link_libraries(${exec_name} PRIVATE
+        utils
+        CLI11::CLI11
+    )
+
+    set_target_properties(${exec_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${output_dir}
+        OUTPUT_NAME ${exec_name}
     )
 endforeach()

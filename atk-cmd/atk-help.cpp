@@ -1,5 +1,5 @@
 #include "atk-help.h"
-#include "../globals.h"
+#include "../utils/inc/globals.h"
 
 int main() {
     printf("%s", getHelp().c_str());
@@ -16,7 +16,7 @@ string getHelp() {
     help += "  -v, --version    Show version information\n";
     
     help += "Available Commands:\n";
-    vector<string> commands = getAvailableCommands();
+    vector<string> commands = getAvailableCommands(COMMANDS_DIR);
     for (string cmd : commands) {
         help += "  " + cmd + "\n";
     }

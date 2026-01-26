@@ -1,5 +1,5 @@
 #include "atk-version.h"
-#include "../globals.h"
+#include "../utils/inc/globals.h"
 
 int main() {
     printf("ATK Version: %s\n", getVersion().c_str());

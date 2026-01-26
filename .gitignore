@@ -4,3 +4,4 @@
 atk
 *.hpp
 build
+.cache
