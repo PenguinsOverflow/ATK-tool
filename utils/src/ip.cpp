@@ -46,6 +46,88 @@ string getMacFromIP(const string& ip) {
     return mac;
 }
 
+bool sendARPResponse(const string& targetIP, const string& targetMac, const string& senderIP, const string& senderMac, const string& interface) {
+    
+    // Convert MAC addresses from string to byte array
+    unsigned char srcMac[6], dstMac[6];
+    if (sscanf(senderMac.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+               &srcMac[0], &srcMac[1], &srcMac[2], 
+               &srcMac[3], &srcMac[4], &srcMac[5]) != 6) {
+        return false;
+    }
+    if (sscanf(targetMac.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+               &dstMac[0], &dstMac[1], &dstMac[2], 
+               &dstMac[3], &dstMac[4], &dstMac[5]) != 6) {
+        return false;
+    }
+    
+    // open BPF device
+    int bpf = -1;
+    char bpf_dev[32];
+    
+    for (int i = 0; i < 99; i++) {
+        snprintf(bpf_dev, sizeof(bpf_dev), "/dev/bpf%d", i);
+        bpf = open(bpf_dev, O_RDWR);
+        if (bpf != -1) break;
+    }
+    
+    if (bpf < 0) {
+        return false;
+    }
+    
+    // link BPF to interface
+    struct ifreq ifr;
+    strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ - 1);
+    if (ioctl(bpf, BIOCSETIF, &ifr) < 0) {
+        close(bpf);
+        return false;
+    }
+    
+    // Enable immediate mode (no buffering)
+    unsigned int enable = 1;
+    ioctl(bpf, BIOCIMMEDIATE, &enable);
+    
+    // Craft ARP reply packet
+    unsigned char buffer[42];
+    memset(buffer, 0, sizeof(buffer));
+    
+    // Ethernet header
+    memcpy(buffer, dstMac, 6);        // Destination MAC
+    memcpy(buffer + 6, srcMac, 6);    // Source MAC
+    buffer[12] = 0x08;                // EtherType: ARP
+    buffer[13] = 0x06;
+    
+    // ARP header
+    buffer[14] = 0x00; buffer[15] = 0x01;  // Hardware type: Ethernet
+    buffer[16] = 0x08; buffer[17] = 0x00;  // Protocol type: IPv4
+    buffer[18] = 0x06;                      // Hardware size
+    buffer[19] = 0x04;                      // Protocol size
+    buffer[20] = 0x00; buffer[21] = 0x02;  // Opcode: ARP Reply (0x0002)
+    
+    // Sender MAC
+    memcpy(buffer + 22, srcMac, 6);
+    
+    // Sender IP
+    struct in_addr senderAddr;
+    inet_aton(senderIP.c_str(), &senderAddr);
+    memcpy(buffer + 28, &senderAddr, 4);
+    
+    // Target MAC
+    memcpy(buffer + 32, dstMac, 6);
+    
+    // Target IP
+    struct in_addr targetAddr;
+    inet_aton(targetIP.c_str(), &targetAddr);
+    memcpy(buffer + 38, &targetAddr, 4);
+    
+    // Send the packet
+    ssize_t sent = write(bpf, buffer, 42);
+    
+    close(bpf);
+    
+    return sent == 42;
+}
+
 string getMacFromInterface(const string& interface) {
     struct ifaddrs *ifap, *ifa;
     string macAddress = "00:00:00:00:00:00";
