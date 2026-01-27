@@ -191,3 +191,13 @@ bool interfaceExists(const string& interface) {
     freeifaddrs(ifap);
     return found;
 }
+
+bool enableIPForwarding() {
+    int result = system("sysctl -w net.inet.ip.forwarding=1 > /dev/null 2>&1");
+    return result == 0;
+}
+
+bool disableIPForwarding() {
+    int result = system("sysctl -w net.inet.ip.forwarding=0 > /dev/null 2>&1");
+    return result == 0;
+}
