@@ -74,3 +74,21 @@ foreach(cmd ${ATK_COMMANDS})
         OUTPUT_NAME ${exec_name}
     )
 endforeach()
+
+# ==================================================
+# Install
+# ==================================================
+include(GNUInstallDirs)
+
+# Install main command
+install(
+    TARGETS atk
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Install atk-* subcommands
+install(
+    DIRECTORY ${CMAKE_BINARY_DIR}/atk-cmd-bin/
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/atk-cmd-bin
+    USE_SOURCE_PERMISSIONS
+)
