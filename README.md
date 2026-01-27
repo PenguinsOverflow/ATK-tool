@@ -20,8 +20,10 @@ atk -h
 
 ## 💻 Commands
 #### ARP
-- [x] spoofing
-- [x] MITM (man in the middle)
+- [x] spoofing (MacOS)
+- [ ] spoofing (Linux)
+- [x] MITM (MacOS)
+- [ ] MITM (Linux)
 
 #### WiFi 
 [ideas](https://noc.unipr.it/risorse/public/noc/Attacchi_WiFi_2007-05-30.pdf)
