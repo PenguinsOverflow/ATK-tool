@@ -19,7 +19,7 @@ cmake --build .
 ## 💻 Commands
 #### ARP
 - [x] spoofing
-- [ ] MITM (man in the middle)
+- [x] MITM (man in the middle)
 
 #### WiFi 
 [ideas](https://noc.unipr.it/risorse/public/noc/Attacchi_WiFi_2007-05-30.pdf)
