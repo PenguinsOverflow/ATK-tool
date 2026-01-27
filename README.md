@@ -14,12 +14,16 @@ mkdir build
 cmake -S . -B build
 cd build
 cmake --build .
+sudo cmake --install .
+atk -h
 ```
 
 ## 💻 Commands
 #### ARP
-- [x] spoofing
-- [ ] MITM (man in the middle)
+- [x] spoofing (MacOS)
+- [ ] spoofing (Linux)
+- [x] MITM (MacOS)
+- [ ] MITM (Linux)
 
 #### WiFi 
 [ideas](https://noc.unipr.it/risorse/public/noc/Attacchi_WiFi_2007-05-30.pdf)

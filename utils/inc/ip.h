@@ -14,3 +14,5 @@ bool sendARPResponse(const string& targetIP, const string& targetMac,
                      const string& interface);
 string getMacFromInterface(const string& interface);
 bool interfaceExists(const string& interface);
+bool enableIPForwarding();
+bool disableIPForwarding();
