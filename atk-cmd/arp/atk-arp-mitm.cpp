@@ -1,4 +1,5 @@
 #include "../../utils/inc/ip.h"
+#include "../../utils/inc/terminal.h"
 #include <CLI/CLI.hpp>
 #include <cstdio>
 #include <iostream>
@@ -48,6 +49,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     // **********************************
+
+    if (!isSudo()) {
+        printf("This command requires root privileges. Please run with sudo.\n");
+        return 1;
+    }
 
     string spoofedMac = getMacFromInterface(interface);
 
