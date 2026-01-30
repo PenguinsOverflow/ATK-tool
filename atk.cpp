@@ -21,10 +21,10 @@ int main(int argc, char* argv[]) {
         }
 
         if (arg == "-h" || arg == "--help") {
-            system(format("./{}atk-help", COMMANDS_DIR).c_str());
+            system(format("{}atk-help", COMMANDS_DIR).c_str());
             return 0;
         } else if (arg == "-v" || arg == "--version") {
-            system(format("./{}atk-version", COMMANDS_DIR).c_str());
+            system(format("{}atk-version", COMMANDS_DIR).c_str());
             return 0;
         } else {
             str_args = arg + " " + str_args;
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
                     string str_directory = calcDirectory(cmd);
                     str_args = str_args.substr(cmd.size());
                     replace_all(cmd, " ", "-");
-                    system(format("./{}{}atk-{} {}", COMMANDS_DIR, str_directory, cmd, str_args).c_str());
+                    system(format("{}{}atk-{} {}", COMMANDS_DIR, str_directory, cmd, str_args).c_str());
                 }
             }
 
